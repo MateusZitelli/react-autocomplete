@@ -4,7 +4,9 @@
   "description": "",
   "main": "lib/main.js",
   "scripts": {
-    "test": "echo \"no tests yet, just trust me\" && exit 0"
+    "test": "echo \"no tests yet, just trust me\" && exit 0",
+    "compile": "babel --stage 0 --out-dir lib/ src/",
+    "prepublish": "npm run compile"
   },
   "author": "",
   "license": "MIT",
@@ -12,6 +14,7 @@
     "react": "^0.12.2"
   },
   "devDependencies": {
+    "babel": "^5.2.17", 
     "jsx-loader": "^0.10.2",
     "webpack": "^1.7.3",
     "rf-release": "^0.1.2"

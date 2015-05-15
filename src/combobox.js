@@ -1,13 +1,10 @@
-'use strict';
-
 var React = require('react');
 var guid = 0;
-var k = function k() {};
+var k = function(){};
 var addClass = require('./add-class');
 var ComboboxOption = require('./option');
 
 module.exports = React.createClass({
-  displayName: 'exports',
 
   propTypes: {
 
@@ -49,7 +46,7 @@ module.exports = React.createClass({
     value: React.PropTypes.any
   },
 
-  getDefaultProps: function getDefaultProps() {
+  getDefaultProps: function() {
     return {
       autocomplete: 'both',
       onInput: k,
@@ -58,7 +55,7 @@ module.exports = React.createClass({
     };
   },
 
-  getInitialState: function getInitialState() {
+  getInitialState: function() {
     return {
       value: this.props.value,
       // the value displayed in the input
@@ -69,7 +66,7 @@ module.exports = React.createClass({
       // this prevents crazy jumpiness since we focus options on mouseenter
       usingKeyboard: false,
       activedescendant: null,
-      listId: 'rf-combobox-list-' + ++guid,
+      listId: 'rf-combobox-list-'+(++guid),
       menu: {
         children: [],
         activedescendant: null,
@@ -78,11 +75,11 @@ module.exports = React.createClass({
     };
   },
 
-  componentWillMount: function componentWillMount() {
-    this.setState({ menu: this.makeMenu() });
+  componentWillMount: function() {
+    this.setState({menu: this.makeMenu()});
   },
 
-  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+  componentWillReceiveProps: function(newProps) {
     this.setState({
       menu: this.makeMenu(newProps.children)
     });
@@ -93,21 +90,21 @@ module.exports = React.createClass({
    * so before rendering we attach handlers to facilitate communication from
    * the ComboboxOption to the Combobox.
   */
-  makeMenu: function makeMenu(children) {
+  makeMenu: function(children) {
     var activedescendant;
     var isEmpty = true;
     children = children || this.props.children;
-    React.Children.forEach(children, (function (child, index) {
+    React.Children.forEach(children, function(child, index) {
       if (child.type !== ComboboxOption.type)
         // allow random elements to live in this list
         return;
-      isEmpty = false;
+       isEmpty = false;
       // TODO: cloneWithProps and map instead of altering the children in-place
       var props = child.props;
       if (this.state.value === props.value) {
         // need an ID for WAI-ARIA
-        props.id = props.id || 'rf-combobox-selected-' + ++guid;
-        props.isSelected = true;
+        props.id = props.id || 'rf-combobox-selected-'+(++guid);
+        props.isSelected = true
         activedescendant = props.id;
       }
       props.onBlur = this.handleOptionBlur;
@@ -115,7 +112,7 @@ module.exports = React.createClass({
       props.onFocus = this.handleOptionFocus;
       props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
       props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
-    }).bind(this));
+    }.bind(this));
     return {
       children: children,
       activedescendant: activedescendant,
@@ -123,9 +120,10 @@ module.exports = React.createClass({
     };
   },
 
-  getClassName: function getClassName() {
+  getClassName: function() {
     var className = addClass(this.props.className, 'rf-combobox');
-    if (this.state.isOpen) className = addClass(className, 'rf-combobox-is-open');
+    if (this.state.isOpen)
+      className = addClass(className, 'rf-combobox-is-open');
     return className;
   },
 
@@ -133,7 +131,7 @@ module.exports = React.createClass({
    * When the user begins typing again we need to clear out any state that has
    * to do with an existing or potential selection.
   */
-  clearSelectedState: function clearSelectedState(cb) {
+  clearSelectedState: function(cb) {
     this.setState({
       focusedIndex: null,
       inputValue: null,
@@ -143,35 +141,40 @@ module.exports = React.createClass({
     }, cb);
   },
 
-  handleInputChange: function handleInputChange(event) {
+  handleInputChange: function(event) {
     var value = this.refs.input.getDOMNode().value;
-    this.clearSelectedState((function () {
+    this.clearSelectedState(function() {
       this.props.onInput(value);
-      if (!this.state.isOpen) this.showList();
-    }).bind(this));
+      if (!this.state.isOpen)
+        this.showList();
+    }.bind(this));
   },
 
-  handleInputBlur: function handleInputBlur() {
+  handleInputBlur: function() {
     var focusedAnOption = this.state.focusedIndex != null;
-    if (focusedAnOption) return;
+    if (focusedAnOption)
+      return;
     this.maybeSelectAutocompletedOption();
     this.hideList();
   },
 
-  handleOptionBlur: function handleOptionBlur() {
+  handleOptionBlur: function() {
     // don't want to hide the list if we focused another option
     this.blurTimer = setTimeout(this.hideList, 0);
   },
 
-  handleOptionFocus: function handleOptionFocus() {
+  handleOptionFocus: function() {
     // see `handleOptionBlur`
     clearTimeout(this.blurTimer);
   },
 
-  handleInputKeyUp: function handleInputKeyUp(event) {
-    if (this.state.menu.isEmpty ||
-    // autocompleting while backspacing feels super weird, so let's not
-    event.keyCode === 8 /*backspace*/ || !this.props.autocomplete.match(/both|inline/)) return;
+  handleInputKeyUp: function(event) {
+    if (
+      this.state.menu.isEmpty ||
+      // autocompleting while backspacing feels super weird, so let's not
+      event.keyCode === 8 /*backspace*/ ||
+      !this.props.autocomplete.match(/both|inline/)
+    ) return;
     this.autocompleteInputValue();
   },
 
@@ -180,42 +183,49 @@ module.exports = React.createClass({
    * ComboboxOption in the list and selects only the fragment that has
    * been added, allowing the user to keep typing naturally.
   */
-  autocompleteInputValue: function autocompleteInputValue() {
-    if (this.props.autocomplete == false || this.props.children.length === 0) return;
+  autocompleteInputValue: function() {
+    if (
+      this.props.autocomplete == false ||
+      this.props.children.length === 0
+    ) return;
     var input = this.refs.input.getDOMNode();
     var inputValue = input.value;
-    var firstChild = this.props.children.length ? this.props.children[0] : this.props.children;
+    var firstChild = this.props.children.length ?
+      this.props.children[0] :
+      this.props.children;
     var label = getLabel(firstChild);
     var fragment = matchFragment(inputValue, label);
-    if (!fragment) return;
+    if (!fragment)
+      return;
     input.value = label;
     input.setSelectionRange(inputValue.length, label.length);
-    this.setState({ matchedAutocompleteOption: firstChild });
+    this.setState({matchedAutocompleteOption: firstChild});
   },
 
-  handleButtonClick: function handleButtonClick() {
+  handleButtonClick: function() {
     this.state.isOpen ? this.hideList() : this.showList();
     this.focusInput();
   },
 
-  showList: function showList() {
-    if (this.props.autocomplete.match(/both|list/)) this.setState({ isOpen: true });
+  showList: function() {
+    if (this.props.autocomplete.match(/both|list/))
+      this.setState({isOpen: true});
   },
 
-  hideList: function hideList() {
-    this.setState({ isOpen: false });
+  hideList: function() {
+    this.setState({isOpen: false});
   },
 
-  hideOnEscape: function hideOnEscape() {
+  hideOnEscape: function() {
     this.hideList();
     this.focusInput();
   },
 
-  focusInput: function focusInput() {
+  focusInput: function() {
     this.refs.input.getDOMNode().focus();
   },
 
-  selectInput: function selectInput() {
+  selectInput: function() {
     this.refs.input.getDOMNode().select();
   },
 
@@ -233,15 +243,16 @@ module.exports = React.createClass({
     27: 'hideOnEscape'
   },
 
-  handleKeydown: function handleKeydown(event) {
+  handleKeydown: function(event) {
     var handlerName = this.inputKeydownMap[event.keyCode];
-    if (!handlerName) return;
+    if (!handlerName)
+      return
     event.preventDefault();
-    this.setState({ usingKeyboard: true });
+    this.setState({usingKeyboard: true});
     this[handlerName].call(this);
   },
 
-  handleOptionKeyDown: function handleOptionKeyDown(child, event) {
+  handleOptionKeyDown: function(child, event) {
     var handlerName = this.optionKeydownMap[event.keyCode];
     if (!handlerName) {
       // if the user starts typing again while focused on an option, move focus
@@ -250,124 +261,129 @@ module.exports = React.createClass({
       return;
     }
     event.preventDefault();
-    this.setState({ usingKeyboard: true });
+    this.setState({usingKeyboard: true});
     this[handlerName].call(this, child);
   },
 
-  handleOptionMouseEnter: function handleOptionMouseEnter(index) {
-    if (this.state.usingKeyboard) this.setState({ usingKeyboard: false });else this.focusOptionAtIndex(index);
+  handleOptionMouseEnter: function(index) {
+    if (this.state.usingKeyboard)
+      this.setState({usingKeyboard: false});
+    else
+      this.focusOptionAtIndex(index);
   },
 
-  selectOnEnter: function selectOnEnter() {
+  selectOnEnter: function() {
     this.maybeSelectAutocompletedOption();
     this.refs.input.getDOMNode().select();
   },
 
-  maybeSelectAutocompletedOption: function maybeSelectAutocompletedOption() {
-    if (!this.state.matchedAutocompleteOption) return;
-    this.selectOption(this.state.matchedAutocompleteOption, { focus: false });
+  maybeSelectAutocompletedOption: function() {
+    if (!this.state.matchedAutocompleteOption)
+      return;
+    this.selectOption(this.state.matchedAutocompleteOption, {focus: false});
   },
 
-  selectOption: function selectOption(child, options) {
+  selectOption: function(child, options) {
     options = options || {};
     this.setState({
       value: child.props.value,
       inputValue: getLabel(child),
       matchedAutocompleteOption: null
-    }, (function () {
+    }, function() {
       this.props.onSelect(child.props.value, child);
       this.hideList();
-      if (options.focus !== false) this.selectInput();
-    }).bind(this));
+      if (options.focus !== false)
+        this.selectInput();
+    }.bind(this));
   },
 
-  focusNext: function focusNext() {
+  focusNext: function() {
     if (this.state.menu.isEmpty) return;
-    var index = this.state.focusedIndex == null ? 0 : this.state.focusedIndex + 1;
+    var index = this.state.focusedIndex == null ?
+      0 : this.state.focusedIndex + 1;
     this.focusOptionAtIndex(index);
   },
 
-  focusPrevious: function focusPrevious() {
+  focusPrevious: function() {
     if (this.state.menu.isEmpty) return;
     var last = this.props.children.length - 1;
-    var index = this.state.focusedIndex == null ? last : this.state.focusedIndex - 1;
+    var index = this.state.focusedIndex == null ?
+      last : this.state.focusedIndex - 1;
     this.focusOptionAtIndex(index);
   },
 
-  focusSelectedOption: function focusSelectedOption() {
+  focusSelectedOption: function() {
     var selectedIndex;
-    React.Children.forEach(this.props.children, (function (child, index) {
-      if (child.props.value === this.state.value) selectedIndex = index;
-    }).bind(this));
+    React.Children.forEach(this.props.children, function(child, index) {
+      if (child.props.value === this.state.value)
+        selectedIndex = index;
+    }.bind(this));
     this.showList();
     this.setState({
       focusedIndex: selectedIndex
     }, this.focusOption);
   },
 
-  findInputValue: function findInputValue(value) {
+  findInputValue: function(value) {
     value = value || this.props.value;
     // TODO: might not need this, we should know this in `makeMenu`
     var inputValue;
-    React.Children.forEach(this.props.children, function (child) {
-      if (child.props.value === value) inputValue = getLabel(child);
+    React.Children.forEach(this.props.children, function(child) {
+      if (child.props.value === value)
+        inputValue = getLabel(child);
     });
     return inputValue || value;
   },
 
-  focusOptionAtIndex: function focusOptionAtIndex(index) {
-    if (!this.state.isOpen && this.state.value) return this.focusSelectedOption();
+  focusOptionAtIndex: function(index) {
+    if (!this.state.isOpen && this.state.value)
+      return this.focusSelectedOption();
     this.showList();
     var length = this.props.children.length;
-    if (index === -1) index = length - 1;else if (index === length) index = 0;
+    if (index === -1)
+      index = length - 1;
+    else if (index === length)
+      index = 0;
     this.setState({
       focusedIndex: index
     }, this.focusOption);
   },
 
-  focusOption: function focusOption() {
+  focusOption: function() {
     var index = this.state.focusedIndex;
     this.refs.list.getDOMNode().childNodes[index].focus();
   },
 
-  render: function render() {
-    return React.createElement(
-      'div',
-      { className: this.getClassName() },
-      React.createElement('input', {
-        ref: 'input',
-        className: 'rf-combobox-input',
-        defaultValue: this.props.value,
-        value: this.state.inputValue,
-        onChange: this.handleInputChange,
-        onBlur: this.handleInputBlur,
-        onKeyDown: this.handleKeydown,
-        onKeyUp: this.handleInputKeyUp,
-        role: 'combobox',
-        'aria-activedescendant': this.state.menu.activedescendant,
-        'aria-autocomplete': this.props.autocomplete,
-        'aria-owns': this.state.listId
-      }),
-      React.createElement(
-        'span',
-        {
-          'aria-hidden': 'true',
-          className: 'rf-combobox-button',
-          onClick: this.handleButtonClick
-        },
-        '▾'
-      ),
-      React.createElement(
-        'div',
-        {
-          id: this.state.listId,
-          ref: 'list',
-          className: 'rf-combobox-list',
-          'aria-expanded': this.state.isOpen + '',
-          role: 'listbox'
-        },
-        this.state.menu.children
-      )
+  render: function() {
+    return (
+      <div className={this.getClassName()}>
+        <input
+          ref="input"
+          className="rf-combobox-input"
+          defaultValue={this.props.value}
+          value={this.state.inputValue}
+          onChange={this.handleInputChange}
+          onBlur={this.handleInputBlur}
+          onKeyDown={this.handleKeydown}
+          onKeyUp={this.handleInputKeyUp}
+          role="combobox"
+          aria-activedescendant={this.state.menu.activedescendant}
+          aria-autocomplete={this.props.autocomplete}
+          aria-owns={this.state.listId}
+        />
+        <span
+          aria-hidden="true"
+          className="rf-combobox-button"
+          onClick={this.handleButtonClick}
+        >▾</span>
+        <div
+          id={this.state.listId}
+          ref="list"
+          className="rf-combobox-list"
+          aria-expanded={this.state.isOpen+''}
+          role="listbox"
+        >{this.state.menu.children}</div>
+      </div>
     );
   }
 });
@@ -380,7 +396,10 @@ function getLabel(component) {
 function matchFragment(userInput, firstChildLabel) {
   userInput = userInput.toLowerCase();
   firstChildLabel = firstChildLabel.toLowerCase();
-  if (userInput === '' || userInput === firstChildLabel) return false;
-  if (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === -1) return false;
+  if (userInput === '' || userInput === firstChildLabel)
+    return false;
+  if (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === -1)
+    return false;
   return true;
 }
+

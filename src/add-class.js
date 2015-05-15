@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = addClass;
 
 function addClass(existing, added) {
@@ -7,3 +5,4 @@ function addClass(existing, added) {
   if (existing.indexOf(added) > -1) return existing;
   return existing + ' ' + added;
 }
+
